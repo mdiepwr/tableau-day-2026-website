@@ -1,0 +1,495 @@
+@import "tailwindcss";
+
+/*
+  Outfit (Google Fonts, SIL Open Font License) is the only face on the site:
+  hero title, headings, body and figures. Requested in index.html at the three
+  weights this scale uses — 400, 600, 700 — so nothing is synthesised.
+
+  Two things it does not have, both deliberate trade-offs of using one family:
+  it ships no italic, so the intro's italic annotation is a browser-synthesised
+  oblique; and its tabular-figure coverage is unverified, so the
+  countdown holds its layout with a fixed column width rather than relying on
+  `tabular-nums` alone.
+*/
+
+/*
+  ============================================================================
+  DESIGN SYSTEM
+  ============================================================================
+  Single source of truth for type, spacing, colour, radius and named
+  dimensions. Components never hard-code a value — everything resolves
+  through a name declared here.
+
+  Two of Tailwind's built-in scales are deliberately cleared and replaced:
+
+  * `--text-*: initial` removes text-xs ... text-9xl, so the only type steps
+    that exist are the ten below. A stray `text-2xl` simply will not compile.
+  * `--spacing: initial` disables Tailwind's dynamic spacing, which would
+    otherwise generate *any* multiple of 4px on demand (p-5, p-7, p-13 ...).
+    Only the ten steps below are defined, so off-scale spacing cannot be
+    written by accident.
+  ============================================================================
+*/
+@theme static {
+  /* --------------------------------------------------------------------- */
+  /* Typography                                                            */
+  /* --------------------------------------------------------------------- */
+
+  /* One family, Outfit, loaded in index.html at 400/600/700 — the three
+     weights this scale asks for. A geometric sans: near-circular bowls and
+     open counters, which is what lets the hero read as display type at 400
+     instead of needing weight. There is no separate display face. */
+  --font-sans: "Outfit", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+
+  /*
+    How much larger the landing is drawn than the rest of the scale. One knob:
+    the hero title, the countdown digits, the partner logos and the countdown
+    column all derive from it, so the landing scales as a unit and the base
+    steps below still read as the numbers they have always been. Tune this,
+    not the individual sizes.
+  */
+  --hero-scale: 1.5;
+
+  /*
+    The title is drawn a fifth smaller than the rest of the landing, because it
+    has one constraint the other hero elements do not: it must set on one line.
+    At the full hero scale it measures 1123px against the 1088px page container
+    and breaks in two. 0.8 x 1.5 = 1.2 — see --text-display.
+  */
+  --title-scale: calc(var(--hero-scale) * 0.8);
+
+  --text-*: initial;
+
+  /*
+    Ten steps: eight that the page uses and two the landing owns (display and
+    countdown). Each carries its own line-height and
+    font-weight, so a single utility applies the whole step and the three can
+    never drift apart.
+
+    Values below are the MOBILE steps — this is a mobile-first scale. Heading
+    steps are overridden upward at the md breakpoint in the base layer below.
+    Body and smaller never change: 16px is the floor at every viewport, which
+    also keeps iOS from auto-zooming form fields.
+  */
+
+  /* Hero title — 67px mobile / 115px desktop (56/96 x --title-scale). Only the
+     landing h1 takes this step, so it is the hero size: the title is meant to
+     dominate the viewport.
+
+     Sized to hold one line on desktop. "Tableau Day 2026" measures 7.8em in
+     Outfit at tracking-tight, so 115px sets it in 898px inside the 1088px page
+     container. Below ~976px the container is no longer the limit and the
+     viewport is, so the desktop override also caps the size at the width
+     available for one line: (100vw - 3rem) for the landing's `px-6`, divided by
+     8 rather than 7.8 to leave the line a little slack.
+
+     Mobile does not try for one line — 342px of a 390px viewport cannot hold
+     it at any readable size — so it wraps to "Tableau" / "Day 2026" (233px and
+     278px at 67px), three lines below ~350px. The longest word clears a 320px
+     viewport either way, so no cap is needed. It sets on one line again from
+     about 620px, before the desktop step takes over at 768px.
+
+     Weight 400 by request, and Outfit carries it at this size: the geometric
+     skeleton supplies the presence that weight would otherwise have to. */
+  --text-display: calc(3.5rem * var(--title-scale));
+  --text-display--line-height: 1.05;
+  --text-display--font-weight: 400;
+
+  /* Countdown digits — 32px mobile / 40px desktop. Its own step rather than a
+     borrowed h1: the digits live only on the landing. It used to carry
+     --hero-scale like the rest of the hero, but the digits read as too loud
+     against the smaller title, so they now sit at the base 32/40px and, at
+     weight 400, a step lighter than a heading. Still large text (>=24px), which
+     is what lets the digits take `muted-light` and clear its 3:1 threshold. */
+  --text-countdown: 2rem;
+  --text-countdown--line-height: 1.15;
+  --text-countdown--font-weight: 400;
+
+  /* 32px mobile / 40px desktop */
+  --text-h1: 2rem;
+  --text-h1--line-height: 1.15;
+  --text-h1--font-weight: 700;
+
+  /* 24px mobile / 32px desktop */
+  --text-h2: 1.5rem;
+  --text-h2--line-height: 1.2;
+  --text-h2--font-weight: 600;
+
+  /* 20px mobile / 24px desktop */
+  --text-h3: 1.25rem;
+  --text-h3--line-height: 1.25;
+  --text-h3--font-weight: 600;
+
+  /* 18px mobile / 20px desktop */
+  --text-h4: 1.125rem;
+  --text-h4--line-height: 1.3;
+  --text-h4--font-weight: 600;
+
+  /* 18px at every viewport */
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.5;
+  --text-body-lg--font-weight: 400;
+
+  /* 16px at every viewport — the body floor */
+  --text-body: 1rem;
+  --text-body--line-height: 1.5;
+  --text-body--font-weight: 400;
+
+  /* 14px — captions, secondary notes */
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.4;
+  --text-small--font-weight: 400;
+
+  /* 12px — labels, legal */
+  --text-micro: 0.75rem;
+  --text-micro--line-height: 1.4;
+  --text-micro--font-weight: 400;
+
+  /* --------------------------------------------------------------------- */
+  /* Spacing — 4px base unit, ten steps                                    */
+  /* --------------------------------------------------------------------- */
+
+  /*
+    Keys keep Tailwind's usual arithmetic (n x 4px), so p-4 is still 16px.
+    What changes is that the off-scale steps no longer exist.
+
+    step   utility   px
+    ----   -------   ---
+      1      p-1      4
+      2      p-2      8
+      3      p-3     12
+      4      p-4     16
+      6      p-6     24
+      8      p-8     32
+     12      p-12    48
+     16      p-16    64
+     24      p-24    96
+     32      p-32   128
+  */
+  --spacing: initial;
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+  --spacing-24: 6rem;
+  --spacing-32: 8rem;
+
+  /* --------------------------------------------------------------------- */
+  /* Colour — tier 1: the palette of record                                */
+  /* --------------------------------------------------------------------- */
+
+  /* Wind River Teal. teal-500 is the brand base. */
+  --color-teal-900: #0f3d3a;
+  --color-teal-800: #145a55;
+  --color-teal-700: #1b7a73;
+  --color-teal-600: #229990;
+  --color-teal-500: #31c1b7;
+  --color-teal-400: #5cd0c7;
+  --color-teal-300: #8adfd9;
+  --color-teal-200: #b7eeea;
+  --color-teal-100: #e1f8f6;
+
+  /* Blacks and greys. black-900 is deliberately avoided for large text blocks;
+     gray-400 is a large-text-only ink (see --color-muted-light). */
+  --color-black-900: #0a0a0a;
+  --color-black-800: #1a1a1a;
+  --color-black-700: #2e2e2e;
+  --color-gray-500: #6b6b6b;
+  --color-gray-400: #808080;
+
+  /* Off-whites */
+  --color-offwhite-100: #fafaf8;
+  --color-offwhite-200: #f5f4f0;
+  --color-offwhite-300: #edebe4;
+
+  /* --------------------------------------------------------------------- */
+  /* Colour — tier 2: semantic aliases (what components actually use)      */
+  /* --------------------------------------------------------------------- */
+  /*
+    Components reference intent, not palette position. Contrast ratios below
+    are measured against the surface each token is used on; every text pair
+    clears WCAG AA.
+  */
+
+  /* Surfaces */
+  --color-page: var(--color-offwhite-100);
+  --color-surface: var(--color-offwhite-200);
+  --color-divider: var(--color-offwhite-300);
+  /*
+    Accent divider. teal-300 is only ~1.7:1 against the page, but a divider is
+    decoration rather than a UI boundary, and the hue shift makes it read far
+    more clearly than the luminance ratio alone suggests — unlike `divider`
+    (1.14:1), which is a pure tonal step and needs full width to register.
+  */
+  --color-divider-accent: var(--color-teal-300);
+
+  /* Ink on light surfaces */
+  --color-heading: var(--color-black-800); /* 16.65:1 on page */
+  --color-body: var(--color-black-700); /* 12.99:1 — preferred over black-900 */
+  --color-muted: var(--color-gray-500); /* 5.10:1 */
+
+  /*
+    A lighter grey for large text only — the countdown digits, which are 48px
+    mobile / 60px desktop. 3.78:1 on the page and 3.49:1 on the backdrop's
+    cyan sky, so it clears the 3:1 that text at or above 24px is held to, and
+    nothing else. Anything body-sized takes `muted` (5.10:1) instead.
+
+    It also has to stay off the backdrop's grass, where it falls to 2.31:1.
+    See the landing notes in the steering doc: the hero's top padding is what
+    keeps the countdown above the horizon.
+  */
+  --color-muted-light: var(--color-gray-400);
+
+  /*
+    Accent ink. teal-500 is the brand base but only reaches 2.13:1 on the page
+    background, so it is never used for text. teal-700 (4.93:1) carries
+    headings and teal-800 (7.66:1) carries body-sized accent text.
+  */
+  --color-accent: var(--color-teal-700);
+  --color-accent-strong: var(--color-teal-800);
+
+  /*
+    Primary button. See the steering doc: white on teal-500 is only 2.22:1, so
+    the accessible reading of "teal button, darken on interaction" is a
+    teal-700 base with white ink (5.15:1), deepening to teal-800 (8.00:1) and
+    teal-900 (12.01:1).
+  */
+  --color-primary: var(--color-teal-700);
+  --color-primary-hover: var(--color-teal-800);
+  --color-primary-active: var(--color-teal-900);
+  --color-on-primary: #ffffff;
+
+  /* Inverse button, for use on the dark band where a teal fill would vanish. */
+  --color-inverse: var(--color-offwhite-100);
+  --color-inverse-hover: var(--color-offwhite-200);
+  --color-inverse-active: var(--color-offwhite-300);
+  --color-on-inverse: var(--color-teal-900); /* 11.49:1 */
+
+  /* Tints — badges, placeholder fills, table headers. */
+  --color-tint: var(--color-teal-100);
+  --color-on-tint: var(--color-teal-800); /* 7.23:1 on tint */
+
+  /*
+    Registration footer. A flat teal-700 fill; the copy sits on it and both
+    inks are validated against teal-700: white 5.15:1, teal-100 4.65:1.
+    teal-200 would fail at 4.03:1. (`band-to` keeps the old gradient's name; the
+    gradient's dark `band-from` end was removed when the footer went flat.)
+  */
+  --color-band-to: var(--color-teal-700);
+  --color-band-ink: #ffffff;
+  --color-band-ink-muted: var(--color-teal-100);
+
+  /* --------------------------------------------------------------------- */
+  /* Layout, radius and named dimensions                                   */
+  /* --------------------------------------------------------------------- */
+
+  /*
+    Page container. The width the section grids, the agenda and the CTA expand
+    to before side gutters take over. Raised from 68rem to 90rem (1440px) so
+    wide windows are not left with broad empty margins; it is still a cap rather
+    than full-bleed, which keeps three-column rosters and the agenda table from
+    stretching to unreadable widths on ultrawide displays. Running prose does
+    not use this — the intro lead has its own much narrower `--container-prose`.
+  */
+  --container-page: 90rem;
+
+  /* Reading measure for running prose — the intro lead. 37.5rem (600px) keeps
+     left-aligned body-lg to a short, scannable line length; much wider and the
+     eye has to hunt back for the start of each line. */
+  --container-prose: 37.5rem;
+
+  --radius-card: 0.75rem;
+  --radius-control: 0.625rem;
+
+  /*
+    Top radius of a content band, 40px. Large enough to read as a curve across
+    a full-bleed edge rather than a softened corner, and smaller than the 48px
+    (-mt-12) overlap a band is pulled up by, so the whole arc lands on the band
+    behind it instead of being cut off at the seam.
+  */
+  --radius-band: 2.5rem;
+
+  /* Partner logo height, scaled per logo by its own optical correction, and by
+     --hero-scale because the lockup belongs to the landing: 42px mobile, 54px
+     from sm (28/36 x 1.5). */
+  --size-logo: calc(1.75rem * var(--hero-scale));
+
+  /* Width of a short, centered divider. Full-width dividers use w-full. */
+  --size-divider: 6rem;
+
+  /*
+    Width of one countdown unit column. The column exists because the widest
+    label is what actually sets a unit's width, and fixing it keeps the four
+    units evenly spaced instead of each sizing to its own label. It is also
+    what holds the digits steady as the seconds change: `tabular-nums` is
+    applied, but Outfit's tabular coverage is unverified, so the fixed column
+    rather than the font is what the layout depends on.
+
+    64px below sm, 96px from sm. The binding constraint is the label, not the
+    digits: "Minutes" is 53px at the 12px mobile step and 80px at the 18px
+    step it takes from sm, so the sm column is sized to the label and the
+    now-50px "00" sits comfortably inside it. Four 96px columns plus separators
+    are 486px, inside the 592px a 640px viewport gives.
+  */
+  --size-countdown-unit: 4rem;
+
+  /*
+    How far the landing backdrop is pushed down inside the landing, as a share
+    of the section's own height — the image layer is translated by this much, so
+    its lower edge overflows the section and is clipped.
+
+    It buys two things at once: a strip of plain page above the artwork, and a
+    horizon that lands at ~78% of the viewport instead of ~66%, which leaves the
+    hero room to breathe. A percentage rather than a length so both hold at any
+    viewport height.
+  */
+  --size-backdrop-drop: 12%;
+
+  /*
+    How far down the landing backdrop reaches full opacity. Its top edge sits
+    inside the section rather than on the section's edge, and the artwork's top
+    rows are pure white against a warm off-white page: 1.02:1 in luminance, but
+    the hue difference still reads as a hard line across the sky. Fading the
+    first slice of the image to transparent removes the edge instead of trying
+    to match two colours that cannot match.
+  */
+  --size-backdrop-fade: 20%;
+
+  /*
+    Keynote portrait: 176px mobile, 208px from md, 240px from xl. The roster is
+    three-up from lg, so each cell has room to spare — a 90rem container at xl
+    leaves ~379px per keynote cell — and the larger step just closes the gap
+    that opened between fixed-size circles once the container widened.
+  */
+  --size-avatar-keynote: 11rem;
+  --size-avatar-keynote-lg: 13rem;
+  --size-avatar-keynote-xl: 15rem;
+
+  /*
+    Team portrait: 112px mobile, 128px from md, 152px from xl. The binding
+    constraint is the narrowest cell the three-per-row roster ever gets: two
+    team columns side by side at exactly 1024px leaves (976 - 48 column gap) / 2
+    = 464px per column, and (464 - 48 of gap-x-6) / 3 = 138px per cell, so the
+    md step stays at 128px. The xl step only applies from 1280px, where the same
+    arithmetic gives ~181px per cell — 152px fits with margin — so growing the
+    circle there closes the gap without ever overflowing the tighter lg cell.
+  */
+  --size-avatar-team: 7rem;
+  --size-avatar-team-lg: 8rem;
+  --size-avatar-team-xl: 9.5rem;
+
+  /*
+    Avalanche logo in the intro's left column. The source art (1280x720) is
+    mostly the centred triangle-and-wordmark with transparent margins, so this
+    is a max width the `object-contain` image sits inside rather than an exact
+    render size. 20rem on desktop balances the two-column split; it shrinks to
+    fit on a single column.
+  */
+  --size-avalanche-logo: 20rem;
+
+  /*
+    Width of the hand-annotated note beside the Avalanche logo. Narrow on
+    purpose so "Brought to you by the Avalanche team!" wraps to a couple of
+    short lines, the way a margin note would.
+  */
+  --size-blurb: 11rem;
+  --width-agenda-min: 36rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-page);
+    color: var(--color-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /*
+    Desktop heading steps. Overriding the tokens themselves — rather than
+    asking every call site to write `text-h2-mobile md:text-h2` — means one
+    utility per element stays correct at both sizes, and the responsive
+    behaviour of the scale lives in the design system instead of being
+    re-decided in each component.
+
+    Line-heights and weights are unitless ratios shared by both sizes, so
+    only the font-size needs overriding.
+  */
+  @media (width >= 48rem) {
+    :root {
+      /* 115px, or whatever holds one line if the viewport is narrower than the
+         ~976px that 115px needs. */
+      --text-display: min(
+        calc(6rem * var(--title-scale)),
+        calc((100vw - 3rem) / 8)
+      );
+      --text-countdown: 2.5rem; /* 40px */
+      --text-h1: 2.5rem; /* 40px */
+      --text-h2: 2rem; /* 32px */
+      --text-h3: 1.5rem; /* 24px */
+      --text-h4: 1.25rem; /* 20px */
+    }
+  }
+
+  /*
+    The logo lockup grows on wider viewports. Overriding the token itself is
+    what lets each logo's optical scale keep applying — an inline style cannot
+    carry a media query. The countdown column widens on the same breakpoint,
+    where there is finally room for the enlarged labels.
+  */
+  @media (width >= 40rem) {
+    :root {
+      --size-logo: calc(2.25rem * var(--hero-scale)); /* 54px */
+      --size-countdown-unit: 6rem; /* 96px — holds the 18px label */
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+/*
+  ============================================================================
+  NAMED UTILITIES
+  ============================================================================
+*/
+
+/*
+  A full-bleed layer pinned to its positioned ancestor — the landing backdrop.
+
+  This is a named utility rather than `absolute inset-0 size-full` at the call
+  site because `inset-0` does not exist in this project: `--spacing: initial`
+  removes Tailwind's dynamic inset scale, and declaring a `--spacing-0` step to
+  win it back would contradict a scale whose whole point is ten steps. A zero
+  offset consumes no step, so it belongs in the system layer under a name.
+*/
+@utility layer-fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/*
+  Dissolves the top edge of a layer into whatever sits behind it, over
+  `--size-backdrop-fade`. Only the alpha channel of the gradient matters, so the
+  black/transparent stops here are structural rather than design colours.
+*/
+@utility layer-fade-top {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black var(--size-backdrop-fade)
+  );
+}
