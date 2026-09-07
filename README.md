@@ -17,6 +17,24 @@ npm run build    # typecheck, then production build to dist/
 npm run preview  # serve the production build locally
 ```
 
+## Deploying to GitHub Pages
+
+The site deploys automatically to
+**https://mdiepwr.github.io/tableau-day-2026-website/** on every push to `main`,
+via `.github/workflows/deploy.yml` (it installs, tests, builds and publishes the
+`dist/` output as a Pages artifact — no `gh-pages` branch).
+
+One-time setup in the repository: **Settings → Pages → Build and deployment →
+Source: GitHub Actions**. After that, pushing to `main` is all that is needed.
+
+Because this is a *project* site served from a subpath, `vite.config.ts` sets
+`base: '/tableau-day-2026-website/'` so the built asset URLs resolve. If the
+repo is renamed, or moved to a user site (`mdiepwr.github.io`), update `base` to
+match — otherwise the page loads but every script, style and image 404s.
+
+`dist/` is intentionally git-ignored: the deployed build is produced by the
+workflow, not committed.
+
 ## Editing content
 
 No component changes are needed to update copy or people — everything lives in
