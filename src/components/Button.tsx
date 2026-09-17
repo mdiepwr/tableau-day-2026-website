@@ -7,7 +7,9 @@ interface ButtonProps {
   children: ReactNode;
   size?: ButtonSize;
   variant?: ButtonVariant;
-  /** When provided the button renders as an anchor; otherwise a <button>. */
+  /** When provided the button renders as an anchor; otherwise a <button>. An
+   * absolute http(s) href is treated as leaving the site and opens in a new
+   * tab. */
   href?: string;
   onClick?: () => void;
 }
@@ -50,6 +52,17 @@ const VARIANTS: Record<ButtonVariant, string> = {
 const BASE =
   'inline-flex items-center justify-center rounded-control font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2';
 
+/**
+ * An absolute http(s) href leaves the site, so it opens in a new tab and the
+ * page stays behind it — every off-site link here is the registration form.
+ * Detected from the URL rather than passed as a prop so the two register
+ * buttons, which both read their href from `site.cta`, cannot disagree.
+ *
+ * `rel` is required with `target="_blank"`: without it the opened page can
+ * reach back through `window.opener`.
+ */
+const isExternal = (href: string) => /^https?:\/\//i.test(href);
+
 export default function Button({
   children,
   size = 'medium',
@@ -60,9 +73,21 @@ export default function Button({
   const className = `${BASE} ${VARIANTS[variant]} ${SIZES[size]}`;
 
   if (href) {
+    const external = isExternal(href);
+
     return (
-      <a href={href} className={className} onClick={onClick}>
+      <a
+        href={href}
+        className={className}
+        onClick={onClick}
+        target={external ? '_blank' : undefined}
+        rel={external ? 'noopener noreferrer' : undefined}
+      >
         {children}
+        {/* A link that opens a new tab has to say so, and the visible label
+            reads better without it — so it goes into the accessible name only.
+            Tests that query these links by name must expect the suffix. */}
+        {external && <span className="sr-only"> (opens in a new tab)</span>}
       </a>
     );
   }

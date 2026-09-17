@@ -23,8 +23,13 @@ describe('RegisterCta', () => {
   it('renders the register link with the href from the site config', () => {
     render(<RegisterCta />);
 
-    expect(
-      screen.getByRole('link', { name: cta.buttonLabel }),
-    ).toHaveAttribute('href', cta.buttonHref);
+    const register = screen.getByRole('link', {
+      name: new RegExp(`${cta.buttonLabel}.*opens in a new tab`),
+    });
+
+    expect(register).toHaveAttribute('href', cta.buttonHref);
+    // The form is off-site, so it opens alongside the page rather than
+    // replacing it — Button derives this from the URL.
+    expect(register).toHaveAttribute('target', '_blank');
   });
 });

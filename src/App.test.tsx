@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import App from './App';
 import { benefits } from './data/benefits';
+import { smallGroupSessions } from './data/sessions';
 import { site } from './data/site';
 
 describe('App', () => {
@@ -19,6 +20,7 @@ describe('App', () => {
       'Why Learn Tableau Cloud',
       'Testimonials',
       'Agenda',
+      'Small-Group Sessions',
       site.cta.headline,
     ];
 
@@ -29,14 +31,14 @@ describe('App', () => {
     }
   });
 
-  it('nests only the benefit titles below h2, and nothing below h3', () => {
+  it('nests only the benefit and session titles below h2, and nothing below h3', () => {
     render(<App />);
 
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
-    // The benefit blocks are the one place the outline goes three deep: each
-    // title is a child of the "Why learn Tableau Cloud" h2.
+    // Two places take the outline three deep: each benefit block's title and
+    // each small-group session card, both children of their section's h2.
     expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(
-      benefits.length,
+      benefits.length + smallGroupSessions.length,
     );
     expect(screen.queryAllByRole('heading', { level: 4 })).toHaveLength(0);
   });
@@ -45,15 +47,18 @@ describe('App', () => {
     render(<App />);
 
     // Landing, intro, keynotes, both team columns counted separately,
-    // benefits, testimonials, agenda and the CTA: 9 named regions in total.
-    expect(screen.getAllByRole('region')).toHaveLength(9);
+    // benefits, testimonials, agenda, the small-group sessions and the CTA:
+    // 10 named regions in total.
+    expect(screen.getAllByRole('region')).toHaveLength(10);
   });
 
   it('renders the registration link', () => {
     render(<App />);
 
     expect(
-      screen.getByRole('link', { name: site.cta.buttonLabel }),
+      screen.getByRole('link', {
+        name: new RegExp(`${site.cta.buttonLabel}.*opens in a new tab`),
+      }),
     ).toBeInTheDocument();
   });
 

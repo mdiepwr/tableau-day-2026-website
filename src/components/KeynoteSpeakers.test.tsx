@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import KeynoteSpeakers from './KeynoteSpeakers';
 import { initialsOf } from './Avatar';
 import { keynotes } from '../data/speakers';
+import { TBD } from '../types';
 
 describe('KeynoteSpeakers', () => {
   it('renders one list item per keynote in the data file', () => {
@@ -16,8 +17,22 @@ describe('KeynoteSpeakers', () => {
 
     for (const person of keynotes) {
       expect(screen.getByText(person.name)).toBeInTheDocument();
-      expect(screen.getByText(person.role)).toBeInTheDocument();
+      // getAllByText, because two of the three placeholders share the same TBD
+      // role string and an exact lookup would find both and throw.
+      expect(screen.getAllByText(person.role).length).toBeGreaterThan(0);
     }
+  });
+
+  it('carries placeholders whose role is visibly unconfirmed', () => {
+    render(<KeynoteSpeakers />);
+
+    // Chris B and the Tableau speaker are both unnamed or untitled on the
+    // planning sheet. The roster is allowed to say so — what it must not do is
+    // invent a title — so TBD showing here is the intended state, not a gap.
+    const placeholders = keynotes.filter((person) => person.role === TBD);
+
+    expect(placeholders.length).toBeGreaterThan(0);
+    expect(screen.getAllByText(TBD)).toHaveLength(placeholders.length);
   });
 
   it('names the section with an accessible heading', () => {
@@ -53,11 +68,25 @@ describe('KeynoteSpeakers', () => {
       expect(screen.getByText(initialsOf(person.name))).toBeInTheDocument();
     }
   });
+
+  it('crops keynote portraits to a circle', () => {
+    const { container } = render(<KeynoteSpeakers />);
+
+    // The shell is the crop, so the radius lives on the wrapper rather than on
+    // the image — which is also what trims the corners of a candid shot.
+    const shells = container.querySelectorAll('[aria-hidden="true"]');
+
+    expect(shells).toHaveLength(keynotes.length);
+    for (const shell of shells) {
+      expect(shell.className).toContain('rounded-full');
+      expect(shell.className).toContain('overflow-hidden');
+    }
+  });
 });
 
 describe('initialsOf', () => {
   it('takes the first letter of the first two words', () => {
-    expect(initialsOf('Melanie Tummino')).toBe('MT');
+    expect(initialsOf('Kristen Crocco')).toBe('KC');
   });
 
   it('ignores words beyond the second', () => {

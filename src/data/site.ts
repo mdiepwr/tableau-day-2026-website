@@ -37,8 +37,9 @@ export interface CtaConfig {
   virtualNote: string;
   buttonLabel: string;
   /**
-   * PLACEHOLDER. Swap for the real registration form URL before launch.
-   * `isPlaceholder` keeps the stub obvious so it cannot ship unnoticed.
+   * The live registration form. `isPlaceholder` stays false while this is a
+   * real URL — it exists so a stub cannot ship unnoticed (the dev server warns
+   * when it is true).
    */
   buttonHref: string;
   isPlaceholder: boolean;
@@ -59,14 +60,12 @@ export interface SiteConfig {
    * `lead` is a run of segments rather than a plain string so the key facts can
    * be emphasised from data: a segment with `emphasis: true` renders inside a
    * <strong>. `transition` is the hand-off sentence, shown on its own closer to
-   * the speakers. `blurb` is the small hand-annotated note beside the Avalanche
-   * logo ("Brought to you by...").
+   * the speakers.
    */
   intro: {
     heading: string;
     lead: { text: string; emphasis?: boolean }[];
     transition: string;
-    blurb: string;
   };
   partners: Partner[];
   cta: CtaConfig;
@@ -91,7 +90,6 @@ export const site: SiteConfig = {
     ],
     transition:
       "Open to all Wind River and Aptiv employees worldwide, this year's event features keynotes from our featured speakers below.",
-    blurb: 'Brought to you by the Avalanche team!',
   },
   partners: [
     {
@@ -110,7 +108,7 @@ export const site: SiteConfig = {
     virtualNote:
       'For virtual attendees, you will receive a Teams invite link after registration. We look forward to seeing you there!',
     buttonLabel: 'Register by October 17th',
-    buttonHref: '#',
-    isPlaceholder: true,
+    buttonHref: 'https://forms.gle/icyFLury52SadQNRA',
+    isPlaceholder: false,
   },
 };

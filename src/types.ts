@@ -26,7 +26,7 @@ export interface Person {
 /** One row of the agenda table. */
 export interface AgendaRow {
   id: string;
-  /** Time range as displayed, e.g. "9:15 – 9:45 AM". */
+  /** Start time as displayed, e.g. "9:15 AM". No end time — the next row is it. */
   time: string;
   session: string;
   /** Speaker names, one per line. Empty means "no speaker for this slot". */
@@ -55,5 +55,30 @@ export interface Testimonial {
   role: string;
 }
 
+/**
+ * One of the small-group breakout sessions.
+ *
+ * Everything but `title` is optional because the line-up is still forming, and
+ * the card is built to look deliberate with the title alone. The fields split
+ * the working titles into their parts rather than restating them: `focus` is the
+ * clause after the colon ("what's possible"), `audience` the group a session is
+ * aimed at where it is aimed at one, and `host` the team running it.
+ */
+export interface SmallGroupSession {
+  id: string;
+  title: string;
+  focus?: string;
+  audience?: string;
+  host?: string;
+}
+
 /** Placeholder for a title we do not know yet. */
 export const TBD = 'Title TBD';
+
+/**
+ * Placeholder for a speaker who has not been assigned yet. A name rather than a
+ * dash, because the agenda reads as a real schedule and an empty cell there
+ * means "no speaker for this slot" (a break), not "not decided". Exported so
+ * every unassigned slot is one grep away when the real names arrive.
+ */
+export const SPEAKER_TBD = 'John Doe';

@@ -45,6 +45,7 @@ No component changes are needed to update copy or people — everything lives in
 | `data/site.ts` | Event title, countdown target date, the intro lead paragraphs, partner wordmarks, all CTA copy, registration URL |
 | `data/speakers.ts` | Keynote speakers, Avalanche team, Tableau team, and each person's portrait |
 | `data/agenda.ts` | Agenda table rows |
+| `data/sessions.ts` | The small-group breakout sessions and the note under that heading |
 | `data/benefits.ts` | The three "Why learn Tableau Cloud" blocks, including the brief for each block's artwork |
 | `data/testimonials.ts` | Pull-quotes and their attribution (currently placeholder copy) |
 
@@ -125,10 +126,10 @@ heavy rather than large.
 
 The whole site is set in **Outfit** (Google Fonts, OFL), requested at 400/600
 /700 — the only weights the scale asks for, so nothing is synthesised. One
-family has two costs here: Outfit ships no italic, so the intro's italic
-annotation is a browser-synthesised oblique, and its tabular-figure coverage
-is unverified, so the countdown depends on a fixed column width rather than on
-`tabular-nums` to keep changing digits from shifting.
+family has two costs here: Outfit ships no italic, so any italic would be a
+browser-synthesised oblique — nothing uses one today — and its tabular-figure
+coverage is unverified, so the countdown depends on a fixed column width rather
+than on `tabular-nums` to keep changing digits from shifting.
 
 ### Spacing
 
@@ -155,8 +156,11 @@ render unstyled. A genuine zero offset is declared as a named utility instead �
 
 `components/Button.tsx` owns the padding recipes — vertical is half of
 horizontal at every step. It renders an anchor when given `href`, otherwise a
-`<button>`. Variants are `primary` (teal) and `inverse` (light fill, for dark
-backgrounds).
+`<button>`. An absolute `http(s)` href counts as leaving the site, so it opens
+in a new tab with `rel="noopener noreferrer"` and picks up a screen-reader-only
+"(opens in a new tab)" in its accessible name — which is why the registration
+link is matched by pattern in the tests. Variants are `primary` (teal) and
+`inverse` (light fill, for dark backgrounds).
 
 | Size | Padding | Type step |
 | --- | --- | --- |
@@ -186,6 +190,56 @@ viewport edge to edge, closing the page. It needs no divider or curve above it:
 running full width and switching to the teal fill is itself the break from the
 page-toned agenda band above.
 
+### Small-group sessions
+
+`components/SmallGroupSessions.tsx` shares the agenda's band, directly under the
+table. The agenda names the two breakout blocks and nothing else — they are
+"Breakout 1" and "Breakout 2" there, a slot and a time; this section is what
+fills them in, so a curve between them would separate a question from its answer.
+
+Five `surface` cards on the band's `page` fill — the same layering the agenda
+table uses — reflowing 1 → 2 → 3 columns, which leaves the fifth alone on its
+row at `lg` rather than padding the list to six. Each carries a title (h3, at
+the `text-h4` step) and only what is actually known beyond it: the clause after
+the colon in the working title, the audience where a session names one, and the
+team running it. No icons, no numbers — a number would imply a running order
+these sessions do not have. The note under the heading says the line-up is
+provisional, the same way the benefit blocks carry their artwork briefs.
+
+### Testimonials
+
+One quote shows at a time, at `text-h2` stepping up to `text-h1` (40px) at `md`
+and centred on a 48rem measure (`--size-quote`), so the block reads as somebody
+speaking rather than as a two-column feature list. Quotes swap on a nine-second
+timer, sliding the way the reader is going: forward, the outgoing quote leaves to
+the right and the incoming one arrives from the left; backward, both mirror. The
+distance is `--size-quote-shift` and the sign is `--quote-slide-dir`, set on the
+track (`quote-track` / `quote-track-reverse`) and inherited by the three state
+utilities (`quote-slide-waiting`, `-current`, `-leaving`). All the quotes stay in
+the DOM in a single grid cell, which is what stops the section resizing when a
+shorter quote comes round.
+
+Automatic rotation is only acceptable with the controls that come with it, and
+with no Pause button they are: prev/next arrows flanking the quote and dots that
+reach any quote directly, all of which stop the rotation for good once used, with
+hover and focus holding it in the meantime (WCAG 2.2.2); `aria-hidden` on the
+inactive quotes so nothing is announced mid-sentence; and
+`prefers-reduced-motion` zeroing `--size-quote-shift` to leave the fade without
+the slide.
+
+The arrows sit either side of the quote at every width — the measure cap lives on
+the quote column, so on a wide screen they take their room from the page
+container's spare width rather than out of the line. On a phone there is no spare
+width and the two buttons do cost the quote about 80px, which is the accepted
+price of putting them where a reader looks for them. They take `accent` ink
+rather than the dots' `muted-light`: an always-active control is not an inactive
+boundary, and 4.93:1 is the ink for one.
+
+The section also takes `Section`'s `bandFoot`, which steps its bottom padding to
+`pb-24 md:pb-32`. It is the last section in the surface band, and the agenda band
+is pulled up 48px over it — at the standard `py-12` that overlap consumed the
+entire mobile bottom padding and the quote ended up against the curve.
+
 ### Enforcement
 
 `src/test/designSystem.test.ts` fails the suite on any off-scale spacing value,
@@ -197,8 +251,6 @@ The test catches it instead.
 
 ## Outstanding before launch
 
-- `site.cta.buttonHref` is `#`. Replace it with the real registration URL and
-  set `isPlaceholder: false`. The dev server logs a warning while it is a stub.
 - Both testimonials in `data/testimonials.ts` are fabricated, and so are the
   people they are attributed to. They must be replaced with real, attributable
   quotes — shipping them as-is would put invented words in a colleague's mouth.
@@ -206,26 +258,46 @@ The test catches it instead.
   artwork rather than the artwork itself. Adding a real picture means a `photo`
   field on `Benefit` and an `<img>` branch in `Benefits.tsx`, mirroring how
   `Avatar.tsx` chooses between a portrait and initials.
-- Keynote speakers are carried over from 2025 as placeholders.
+- Two of the three keynotes are placeholders. "Chris B" is the whole name the
+  planning sheet gives, so it needs a surname and a title, and the Tableau
+  keynote speaker has not been named at all — the roster carries "Tableau
+  Speaker" with a `Title TBD` role until they are. Lieu Ta is the only confirmed
+  one.
+- Nine agenda rows credit `SPEAKER_TBD` ("John Doe") because the planning sheet
+  leaves them blank. Grep the constant in `data/agenda.ts` to find every one.
+  Three of them used to carry real credits that may still hold — the Avalanche
+  showcase and the WR office hours to the Avalanche team, the closing to Lieu Ta
+  — and lunch is no longer credited to the Tableau team.
 - Tableau team is five reserved slots; Avalanche titles marked `Title TBD` need
   confirming.
-- Portraits exist for five people (all three keynotes, plus Aniket Rawas and
-  Kristen Crocco). Everyone else still shows an initials circle — drop a square
-  image in `src/assets/` and add a `photo` to the person in `data/speakers.ts`.
-- Two of the five are candid rather than studio shots, and `lieu-ta.webp`
-  (270px) and `sean-lamb.webp` (288px) are smaller than the 208px keynote
-  circle needs on a 2× display, so they will look soft there.
+- Portraits exist for five people (Lieu Ta, Aniket Rawas, Kristen Crocco,
+  Matthew Diep and Parker Miller). Everyone else still shows an initials tile,
+  including two of the three keynotes — drop a square image in `src/assets/` and
+  add a `photo` to the person in `data/speakers.ts`.
+- Some are candid rather than studio shots, and the circular crop trims their
+  corners; `lieu-ta.webp` (270px) is also smaller than the 208px keynote circle
+  needs on a 2× display, so it will look soft there.
 - The CTA photo cluster is still a placeholder. `tableau-day-framewrok.png` is
   the layout reference.
 
 ## Portraits
 
-Square sources only: the avatar is a circle, so anything else crops unevenly.
+Square sources only: every avatar is a circle, so anything else crops unevenly.
 The circle *is* the crop — `overflow-hidden rounded-full` on the shell, the
 image `object-cover` inside it — which also trims whatever sits in the corners
-of a candid shot. Portraits are decorative (`alt=""`, and the whole circle is
-`aria-hidden`) because the name is rendered directly beneath, and they are
-`loading="lazy"` since every roster sits below the fold.
+of a candid shot. Keynotes are 176/208/240px, team members 112/128/152px.
+
+Spacing in the keynote row comes from the columns more than from the gap: the
+grid fills the 90rem container, so three `1fr` columns are ~379px wide around a
+240px portrait and the faces sit roughly 139px apart. A `w-fit` grid was tried,
+which brings that down to whatever `gap-x` says, and the wider spread reads
+better for three large portraits.
+
+Portraits are decorative (`alt=""`, and the whole circle is `aria-hidden`)
+because the name is rendered directly beneath, and they are `loading="lazy"`
+since every roster sits below the fold. Each name block is capped at the
+portrait's width, so a long role wraps under its own circle rather than widening
+the column.
 
 ## Partner logos
 
@@ -240,6 +312,19 @@ Both are sized from the `--size-logo` token in `src/index.css`, multiplied by a
 per-logo `opticalScale` in `data/site.ts`. Tableau renders at `1.3` because its
 lowercase wordmark carries less visual weight than the all-caps WNDRVR mark at
 the same pixel height — adjust that single number if the pairing looks off.
+
+The intro section carries a third mark, the organising team's:
+`bit-team-logo.webp`, from `assets/BIT Team Logo.png`. The source is 900×1600
+with a white background and a blank lower fifth; it was cropped to its content
+box (728×1103) and its background lifted to transparency. Removing the white
+matters — the page is a warm off-white and the intro sits on the `surface` band,
+so an opaque white rectangle would read as a box behind the mark. It is capped
+by `--size-team-logo` (16rem) while the intro is stacked and
+`--size-team-logo-lg` (22rem) once the columns sit side by side, since a portrait
+mark that reads well beside the copy is mostly scrolling when it sits above it.
+Unlike the landing logos and the portraits, it carries real alt text: with the
+old "Brought to you by the Avalanche team!" note and its arrow gone, the mark is
+the only thing that names the team.
 
 ## Layout
 

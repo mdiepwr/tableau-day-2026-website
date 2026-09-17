@@ -361,10 +361,12 @@
   --size-backdrop-fade: 20%;
 
   /*
-    Keynote portrait: 176px mobile, 208px from md, 240px from xl. The roster is
-    three-up from lg, so each cell has room to spare — a 90rem container at xl
-    leaves ~379px per keynote cell — and the larger step just closes the gap
-    that opened between fixed-size circles once the container widened.
+    Keynote portrait: 176px mobile, 208px from md, 240px from xl. Square source,
+    cropped to a circle. The roster is three-up from lg and fills the page
+    container, so each cell has room to spare — a 90rem container at xl leaves
+    ~379px per keynote cell, which is where most of the space between the faces
+    comes from — and the larger step keeps the portraits themselves substantial
+    inside it.
   */
   --size-avatar-keynote: 11rem;
   --size-avatar-keynote-lg: 13rem;
@@ -384,21 +386,74 @@
   --size-avatar-team-xl: 9.5rem;
 
   /*
-    Avalanche logo in the intro's left column. The source art (1280x720) is
-    mostly the centred triangle-and-wordmark with transparent margins, so this
-    is a max width the `object-contain` image sits inside rather than an exact
-    render size. 20rem on desktop balances the two-column split; it shrinks to
-    fit on a single column.
+    BIT team logo in the intro's left column. The source art is cropped to its
+    content box (728x1103, a portrait mark with a two-line wordmark under the
+    illustration), so these are max widths the `object-contain` image sits
+    inside rather than exact render sizes.
+
+    Two steps, like the team avatars, because the mark is portrait and the two
+    layouts want different things from it. At `md` the columns sit side by side:
+    22rem stands 33rem (533px) tall, taller than the copy beside it, so the grid
+    row grows and the intro reads as a picture with text next to it rather than
+    a thumbnail. Much past this outruns the 2x resolution a 728px source covers.
+    Below `md` the columns stack, so every rem of height is height the reader
+    scrolls past before reaching the copy — 16rem keeps the mark under the fold's
+    worth of lead-in, and on a 390px viewport it is the cap that binds rather
+    than the 342px of available width.
   */
-  --size-avalanche-logo: 20rem;
+  --size-team-logo: 16rem;
+  --size-team-logo-lg: 22rem;
 
   /*
-    Width of the hand-annotated note beside the Avalanche logo. Narrow on
-    purpose so "Brought to you by the Avalanche team!" wraps to a couple of
-    short lines, the way a margin note would.
+    Testimonials. One quote shows at a time, so these three govern how it reads
+    and how it is replaced.
+
+    `--size-quote` is a measure, not a box: 48rem (768px) holds roughly 40
+    characters of the 40px desktop step, which is the upper end of a comfortable
+    line. The quote is centred inside the page container rather than filling it —
+    at 90rem a 40px line would run past 90 characters.
+
+    `--size-quote-shift` is how far a quote travels as it is swapped: in from the
+    left, out to the right. 2rem is deliberately small. The movement is there to
+    give the swap a direction, and a longer throw at this type size reads as the
+    text being flung rather than turned over.
+
+    `--duration-quote` is slower than the 150ms of a button, because this is
+    content being replaced rather than a control responding: the eye needs to
+    finish the outgoing line before the incoming one asks to be read.
   */
-  --size-blurb: 11rem;
-  --width-agenda-min: 36rem;
+  --size-quote: 48rem;
+  --size-quote-shift: 2rem;
+  --duration-quote: 500ms;
+
+  /*
+    The dot that selects a quote. 0.625rem (10px) is the mark; the button around
+    it carries `p-2`, which brings the target to 26px and clears the 24px
+    minimum. The dot itself is never the hit area.
+  */
+  --size-quote-dot: 0.625rem;
+
+  /*
+    The prev/next chevron. 1.25rem (20px) is the glyph; like the dot it sits in a
+    `p-2` button, which brings the target to 36px — comfortably past the 24px
+    minimum, and larger than the dots because these two are what a reader reaches
+    for to move through the quotes rather than to jump to one.
+  */
+  --size-quote-arrow: 1.25rem;
+
+  /*
+    Agenda table. `--width-agenda-min` is the point below which the table scrolls
+    sideways instead of crushing three columns; it came down from 36rem when the
+    Time column dropped its end times.
+
+    `--width-agenda-time` caps the Time column so a start time — 8 characters at
+    most, "12:00 PM" — does not take a share of the free width from the session
+    text. 6rem is that string at 16px semibold plus the cell's px-4, and the
+    column is `whitespace-nowrap`, so it cannot be squeezed below its content
+    either.
+  */
+  --width-agenda-min: 33rem;
+  --width-agenda-time: 6rem;
 }
 
 @layer base {
@@ -456,6 +511,17 @@
     html {
       scroll-behavior: auto;
     }
+
+    /*
+      Kills the testimonial slide without touching the cross-fade. Zeroing the
+      distance is enough — the utilities below all translate by this token, and
+      the direction flag only decides its sign — and it leaves the fade, which
+      carries no movement and is what tells the reader one quote has been
+      replaced by another.
+    */
+    :root {
+      --size-quote-shift: 0rem;
+    }
   }
 }
 
@@ -492,4 +558,76 @@
     transparent 0%,
     black var(--size-backdrop-fade)
   );
+}
+
+/*
+  The three states of a testimonial. Every quote is rendered, all in the same
+  grid cell, and these decide which one is legible.
+
+  Stacking in one cell rather than absolutely positioning is what keeps the
+  block from resizing as quotes swap: a grid row is as tall as its tallest item,
+  so the height is the longest quote's from the start, and the shorter quote
+  simply has room to spare. Absolute children would contribute no height at all
+  and need a hard-coded minimum, which would then be wrong for any new quote.
+
+  Movement follows the reader: forward, a quote waits on the left, is read in
+  the middle and leaves to the right; backward, all of that mirrors. That is what
+  `--quote-slide-dir` carries — a sign, not a distance — set on the track and
+  inherited by every quote in it. Before the prev/next arrows existed the
+  movement only ran one way, because the only way through was forward; a
+  Previous button that still slid the incoming quote in from the left would
+  contradict the direction of its own arrow.
+
+  `transform` and `opacity` are the two properties that animate on the
+  compositor, so a swap does not lay the page out again.
+*/
+@utility quote-slide {
+  transition:
+    opacity var(--duration-quote) ease,
+    transform var(--duration-quote) ease;
+}
+
+/*
+  The track holding the stacked quotes. It owns the direction, so one class on
+  the wrapper turns both states below at once and the outgoing and incoming
+  quotes cannot disagree about which way the swap is going.
+
+  `min-width: 0` is here rather than at the call site because the track is a flex
+  item between the two arrows, and a flex item's `min-width: auto` floor would
+  stop it shrinking under its own content. There is no `--spacing-0`, so `min-w-0`
+  resolves to nothing at all — a zero this system needs goes in a named utility.
+*/
+@utility quote-track {
+  --quote-slide-dir: 1;
+  min-width: 0;
+}
+
+/* Reading backwards: the previous arrow, or a dot behind the quote showing. */
+@utility quote-track-reverse {
+  --quote-slide-dir: -1;
+}
+
+@utility quote-slide-current {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* The quote just replaced: still on screen for the length of the fade. */
+@utility quote-slide-leaving {
+  opacity: 0;
+  transform: translateX(calc(var(--quote-slide-dir) * var(--size-quote-shift)));
+  /* Invisible text must not be selectable, or a drag across the block picks up
+     both quotes at once. */
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Every quote not showing, held on the side the next one will arrive from. */
+@utility quote-slide-waiting {
+  opacity: 0;
+  transform: translateX(
+    calc(-1 * var(--quote-slide-dir) * var(--size-quote-shift))
+  );
+  pointer-events: none;
+  user-select: none;
 }

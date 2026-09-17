@@ -12,6 +12,11 @@ interface AvatarProps {
 /**
  * Every fixed dimension resolves through a named token in index.css rather
  * than an inline magic size.
+ *
+ * Both variants are circles; only the size and the initials step differ. A
+ * rounded rectangle was tried for the keynotes — it keeps the corners of a
+ * candid shot, which the circle trims — and the circle read better against the
+ * team roster below it, so the shape stays one decision for the whole page.
  */
 const VARIANTS: Record<AvatarVariant, { box: string; text: string }> = {
   keynote: {
@@ -24,7 +29,7 @@ const VARIANTS: Record<AvatarVariant, { box: string; text: string }> = {
   },
 };
 
-/** "Melanie Tummino" -> "MT". Falls back gracefully on single-word names. */
+/** "Kristen Crocco" -> "KC". Falls back gracefully on single-word names. */
 export function initialsOf(name: string): string {
   return name
     .split(/\s+/)

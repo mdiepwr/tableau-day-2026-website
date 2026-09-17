@@ -5,6 +5,7 @@ import Intro from './components/Intro';
 import KeynoteSpeakers from './components/KeynoteSpeakers';
 import Landing from './components/Landing';
 import RegisterCta from './components/RegisterCta';
+import SmallGroupSessions from './components/SmallGroupSessions';
 import Teams from './components/Teams';
 import Testimonials from './components/Testimonials';
 
@@ -29,6 +30,12 @@ import Testimonials from './components/Testimonials';
  * the curve is meant to be. Inside a band, sections are separated the
  * documented way: their own `py-12 md:py-24`, whitespace rather than boxes.
  *
+ * The agenda band carries the small-group sessions too, for the same reason and
+ * one more: the agenda names the two breakout blocks and nothing else — just
+ * "Breakout 1" and "Breakout 2" — and the sessions section is what fills them
+ * in, so splitting them across a curve would separate a question from its
+ * answer.
+ *
  * The registration footer is a full-bleed teal band spanning the viewport edge
  * to edge, closing the page. It carries its own gradient and needs no divider
  * or curve above it: running full width and switching to the dark teal fill is
@@ -49,6 +56,7 @@ export default function App() {
 
       <Band tone="page">
         <Agenda />
+        <SmallGroupSessions />
       </Band>
 
       <RegisterCta />

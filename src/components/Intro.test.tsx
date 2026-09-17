@@ -49,12 +49,12 @@ describe('Intro', () => {
     expect(screen.getByText(site.intro.transition)).toBeInTheDocument();
   });
 
-  it('renders the Avalanche logo and its hand-annotated blurb', () => {
+  it('renders the BIT team logo', () => {
     render(<Intro />);
 
-    expect(
-      screen.getByRole('img', { name: /avalanche team/i }),
-    ).toBeInTheDocument();
-    expect(screen.getByText(site.intro.blurb)).toBeInTheDocument();
+    // The mark is the only thing naming the organising team now that the
+    // "Brought to you by..." note and its arrow are gone, so it carries real
+    // alt text rather than being decorative.
+    expect(screen.getByRole('img', { name: /bit team/i })).toBeInTheDocument();
   });
 });

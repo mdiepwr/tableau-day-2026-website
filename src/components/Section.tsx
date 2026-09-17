@@ -18,6 +18,22 @@ export const SECTION_CONTAINER = 'mx-auto max-w-page px-6 py-12 md:py-24';
 export const SECTION_CONTAINER_COMPACT_TOP =
   'mx-auto max-w-page px-6 pt-6 pb-12 md:pt-8 md:pb-24';
 
+/**
+ * Same rhythm with the bottom padding stepped up one, for the last section in a
+ * band that the next band curves over.
+ *
+ * `Band` pulls the following band up by 48px, and that overlap eats the bottom
+ * of this one: at the standard `py-12` the whole 48px of mobile bottom padding
+ * is consumed and the content ends up against the curve. Stepping to `pb-24
+ * md:pb-32` leaves 48px clear on mobile and 80px on desktop after the overlap.
+ *
+ * Written as explicit `pt`/`pb` rather than `py-12 pb-24`, because two
+ * utilities writing the same edge depend on the order Tailwind emits them,
+ * which is not something a call site should have to reason about.
+ */
+export const SECTION_CONTAINER_BAND_FOOT =
+  'mx-auto max-w-page px-6 pt-12 pb-24 md:pt-24 md:pb-32';
+
 /** Gap between a section heading and its content. */
 export const SECTION_CONTENT_GAP = 'mt-8 md:mt-12';
 
@@ -32,6 +48,12 @@ interface SectionProps {
    * keeps the standard rhythm.
    */
   compactTop?: boolean;
+  /**
+   * Add back the 48px the next band's curve overlaps, for the last section in a
+   * band — the testimonials, which the agenda curves over. Off by default;
+   * ignored if `compactTop` is also set, which no section needs today.
+   */
+  bandFoot?: boolean;
 }
 
 /**
@@ -44,10 +66,13 @@ export default function Section({
   title,
   children,
   compactTop = false,
+  bandFoot = false,
 }: SectionProps) {
   const container = compactTop
     ? SECTION_CONTAINER_COMPACT_TOP
-    : SECTION_CONTAINER;
+    : bandFoot
+      ? SECTION_CONTAINER_BAND_FOOT
+      : SECTION_CONTAINER;
 
   return (
     <section aria-labelledby={id} className={container}>

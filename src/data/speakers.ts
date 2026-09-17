@@ -2,9 +2,7 @@ import aniketRawas from '../assets/aniket-rawas.webp';
 import kristenCrocco from '../assets/kristen-crocco.webp';
 import lieuTa from '../assets/lieu-ta.webp';
 import matthewDiep from '../assets/matthew-diep.jpg';
-import melissaJacob from '../assets/melissa-jacob.webp';
 import parkerMiller from '../assets/parker-miller.jpg';
-import seanLamb from '../assets/sean-lamb.webp';
 import { TBD, type Person, type PersonPhoto } from '../types';
 
 /**
@@ -15,8 +13,6 @@ import { TBD, type Person, type PersonPhoto } from '../types';
  * Everyone else falls back to an initials avatar until a portrait arrives.
  */
 const PHOTOS = {
-  seanLamb: { src: seanLamb, width: 288, height: 289 },
-  melissaJacob: { src: melissaJacob, width: 800, height: 800 },
   lieuTa: { src: lieuTa, width: 270, height: 271 },
   aniketRawas: { src: aniketRawas, width: 800, height: 800 },
   kristenCrocco: { src: kristenCrocco, width: 800, height: 800 },
@@ -25,24 +21,28 @@ const PHOTOS = {
 } satisfies Record<string, PersonPhoto>;
 
 /**
- * Keynote speakers.
+ * Keynote speakers, in the order the agenda gives them: the executive keynote,
+ * the Tableau keynote, then Lieu Ta — who opens the day with the Welcome rather
+ * than a keynote, and is last here because the two keynote slots come first in
+ * the running order.
  *
- * PLACEHOLDER LINEUP — carried over from Tableau Day 2025 because the 2026
- * keynotes have not been confirmed. Edit this array to update the section; no
+ * Two of the three are placeholders, and deliberately visible as such: "Chris B"
+ * is the whole name on the planning sheet, and the Tableau speaker has not been
+ * named at all, so it takes the same "Tableau …" + `TBD` shape as the five
+ * reserved Tableau team slots below. Neither has a portrait, so both render as
+ * initials until one arrives. Edit this array to update the section; no
  * component changes are needed.
  */
 export const keynotes: Person[] = [
   {
-    id: 'sean-lamb',
-    name: 'Sean Lamb',
-    role: 'Chief Financial Officer',
-    photo: PHOTOS.seanLamb,
+    id: 'chris-b',
+    name: 'Chris B',
+    role: TBD,
   },
   {
-    id: 'melissa-jacob',
-    name: 'Melissa Jacob',
-    role: 'VP Ops and Chief of Staff',
-    photo: PHOTOS.melissaJacob,
+    id: 'tableau-keynote',
+    name: 'Tableau Speaker',
+    role: TBD,
   },
   {
     id: 'lieu-ta',
@@ -76,7 +76,6 @@ export const avalancheTeam: Person[] = [
     photo: PHOTOS.kristenCrocco,
   },
   { id: 'pal-suraj-reddy', name: 'Gutta Suraj Pal Reddy', role: 'Data Developer' },
-  { id: 'melanie-tummino', name: 'Melanie Tummino', role: 'Senior Data Engineer' },
   {
     id: 'matthew-diep',
     name: 'Matthew Diep',

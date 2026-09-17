@@ -47,10 +47,13 @@ describe('Landing', () => {
   it('renders a registration link pointing at the CTA href', () => {
     render(<Landing />);
 
-    const register = screen.getByRole('link', { name: 'Register Here!' });
+    const register = screen.getByRole('link', {
+      name: /Register Here!.*opens in a new tab/,
+    });
 
     // Shares the single registration URL with the footer CTA, so the two
     // cannot drift to different links.
     expect(register).toHaveAttribute('href', site.cta.buttonHref);
+    expect(register).toHaveAttribute('target', '_blank');
   });
 });

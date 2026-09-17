@@ -11,6 +11,13 @@ const COLUMNS = ['Time', 'Session/Activity', 'Speakers'] as const;
  */
 const CELL = 'px-4 py-4 align-top';
 /**
+ * The Time column holds a start time only, so it is capped at
+ * `--width-agenda-time` and never wraps: left to `w-full`'s free-width share it
+ * would sit in a column twice the width of its content, pushing the session text
+ * — the part people actually read — into a narrower one.
+ */
+const TIME_CELL = `${CELL} w-(--width-agenda-time) whitespace-nowrap`;
+/**
  * Header labels take `text-body-lg` (18px) rather than the table's 16px body,
  * a step larger so the column titles read as headers. No italic.
  */
@@ -38,7 +45,19 @@ export default function Agenda() {
             <thead>
               <tr>
                 {COLUMNS.map((column) => (
-                  <th key={column} scope="col" className={HEADER_CELL}>
+                  <th
+                    key={column}
+                    scope="col"
+                    // The width lives on the header as well as the body cell:
+                    // with `table-layout: auto` the widest declaration in a
+                    // column wins, and the 18px header string is the widest
+                    // thing in this one.
+                    className={
+                      column === 'Time'
+                        ? `${HEADER_CELL} w-(--width-agenda-time)`
+                        : HEADER_CELL
+                    }
+                  >
                     {column}
                   </th>
                 ))}
@@ -56,7 +75,7 @@ export default function Agenda() {
                 >
                   {/* Times are bold, which is enough to separate the column
                       from the session text without a border between them. */}
-                  <th scope="row" className={`${CELL} font-semibold`}>
+                  <th scope="row" className={`${TIME_CELL} font-semibold`}>
                     {row.time}
                   </th>
                   <td className={CELL}>{row.session}</td>

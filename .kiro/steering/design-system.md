@@ -117,8 +117,9 @@ element stays correct at both sizes.
   take the `muted-light` grey and clear its 3:1 threshold.
 - Font: **Outfit** (Google Fonts, OFL) for everything, requested at 400/600/700
   — the only weights the scale asks for, so nothing is synthesised. Two gaps
-  come with using one family: no italic, so the intro's italic annotation is a
-  synthesised oblique (keep italic small and rare), and unverified tabular
+  come with using one family: no italic, so any `italic` is a browser-synthesised
+  oblique — nothing on the page uses it now that the intro's annotation is gone,
+  and new italics should stay small and rare — and unverified tabular
   figures, so `tabular-nums` is a hint and the countdown's fixed column width is
   what actually holds changing numerals steady.
 
@@ -141,7 +142,13 @@ utility (`layer-fill`).
 ## Buttons
 
 `components/Button.tsx` owns every recipe. Vertical padding is half the
-horizontal. Renders an anchor when given `href`, otherwise a `<button>`.
+horizontal. Renders an anchor when given `href`, otherwise a `<button>`. An
+absolute `http(s)` href is read as leaving the site: it opens in a new tab with
+`rel="noopener noreferrer"`, and a `sr-only` "(opens in a new tab)" joins the
+accessible name so the jump is announced without lengthening the visible label.
+Detected from the URL rather than passed in, so the two register buttons — which
+share `site.cta.buttonHref` — cannot disagree. Tests must therefore match these
+links by pattern, not exact name.
 
 | Size | Padding | Type step |
 | --- | --- | --- |
@@ -244,13 +251,72 @@ rather than a full-bleed tonal band, so a curve has nothing to curve over.
   ARIA. `border-0` is required, or the default 1px top border shows through as
   a square-ended line under the pill.
 
+## Testimonials
+
+`components/Testimonials.tsx`. One quote at a time on a 48rem measure
+(`--size-quote`), `text-h2` stepping to `text-h1` at `md`, weight overridden to
+400, in `heading` ink. Every quote stays in the DOM, stacked in a single grid
+cell (`col-start-1 row-start-1`), so the block is as tall as the longest quote
+from the start and does not resize as they swap; absolute children would
+contribute no height and need a hard-coded minimum.
+
+Three states, declared as named utilities: `quote-slide-waiting` (held one
+`--size-quote-shift` off to the side the next quote will arrive from),
+`quote-slide-current`, `quote-slide-leaving` (exiting the other way). Movement
+follows the reader rather than running one way: `--quote-slide-dir` is a sign,
+set on the track by `quote-track` (`1`) or `quote-track-reverse` (`-1`) and
+inherited by all three states, so the outgoing and incoming quotes cannot
+disagree about which way a swap is going. Only `transform` and `opacity` animate.
+
+Automatic rotation carries obligations, and each is met in one specific place:
+
+- **Stoppable** — auto-updating content lasting over five seconds needs a way to
+  pause or stop it (WCAG 2.2.2). There is no Pause button, so four behaviours
+  carry it between them and none can be dropped in isolation: the prev/next
+  arrows stop rotation permanently, choosing a quote by its dot stops it
+  permanently too, hovering the block holds it, and focus anywhere in the block
+  holds it as well (the keyboard's substitute for hover). The arrows are the
+  sturdiest of the four — a labelled, keyboard-reachable control whose whole
+  purpose is taking the sequence over — which is what a visible Pause button
+  would otherwise have to be if rotation ever gets faster or the section busier.
+- **Reduced motion** — `prefers-reduced-motion` zeroes `--size-quote-shift`,
+  which kills the slide and keeps the cross-fade. The direction flag only
+  decides that distance's sign, so the override still reaches every state. Any
+  new movement should be expressed through a token that override can reach.
+- **Quiet for assistive tech** — not a live region. Inactive quotes are
+  `aria-hidden`, so the current one reads as ordinary content and the others are
+  reached through the controls, rather than a paragraph interrupting every nine
+  seconds.
+
+The dots are 10px (`--size-quote-dot`) inside a `p-2` button, which brings the
+target to 26px and clears the 24px minimum; the dot is never the hit area.
+Inactive dots are `muted-light`, not `divider` — an inactive control is a UI
+boundary and needs 3:1.
+
+The arrows are a 20px chevron (`--size-quote-arrow`) in the same `p-2` button, so
+a 36px target, and they are drawn inline rather than pulled from an icon
+dependency the project does not have. They take `accent` ink darkening to
+`accent-strong`, not the dots' `muted-light`: an always-active control is not an
+inactive boundary, and 4.93:1 is the ink for one. They flank the quote in a
+single flex row at every width — no breakpoint moves them, nothing is absolutely
+positioned — which works because the measure cap sits on the quote column rather
+than on the block, so on a wide screen the arrows are paid for out of the page
+container's spare width. On a phone they do cost the quote ~80px of line, and
+that is the accepted price of putting them where a reader reaches for them.
+Neither arrow ever disables: both wrap around, so the controls stay live at the
+ends of the list.
+
+`Section`'s `bandFoot` prop belongs to this section: it is the last one in the
+surface band, and the agenda band's `-mt-12` overlap eats its bottom padding, so
+the foot steps up to `pb-24 md:pb-32`. Any section that ends a band needs it.
+
 ## Other conventions
 
 - Named dimensions only — no inline magic sizes. Declare a `--size-*` token and
   reference it as `size-(--size-name)`.
 - Content lives in `src/data/` (`site.ts`, `speakers.ts`, `agenda.ts`,
-  `benefits.ts`, `testimonials.ts`). Components render from those arrays and
-  never inline copy or people.
+  `benefits.ts`, `sessions.ts`, `testimonials.ts`). Components render from those
+  arrays and never inline copy or people.
 - Sections are separated by whitespace, not boxes. One `h1`, then peer `h2`
   per section; every `<section>` is named via `aria-labelledby`.
 - Delete tokens and variants that nothing uses. A dead token reads as intent

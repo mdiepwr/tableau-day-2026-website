@@ -63,4 +63,15 @@ describe('Teams', () => {
       ).toBeGreaterThan(0);
     }
   });
+
+  it('keeps team portraits circular, like the keynotes', () => {
+    const { container } = render(<Teams />);
+
+    const shells = container.querySelectorAll('[aria-hidden="true"]');
+
+    expect(shells).toHaveLength(avalancheTeam.length + tableauTeam.length);
+    for (const shell of shells) {
+      expect(shell.className).toContain('rounded-full');
+    }
+  });
 });
